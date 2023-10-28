@@ -32,7 +32,7 @@ body {
 input {
     outline: 0;
     background: #ffffff;
-    width: 75%;
+    width: 100%;
     border: 2px solid #e6e6e6;
     margin: 0 0 15px;
     padding: 15px;
@@ -40,6 +40,10 @@ input {
     font-size: 14px;
     transition: all 0.3s;
     border-radius: 10px;
+}
+
+#search-bar{
+    width:82.5%;
 }
 
 .btn {

@@ -16,6 +16,7 @@ export function Dashboard() {
             <div style={{marginTop: "1%"}}>
                 <input
                     placeholder={"Search"}
+                    id="search-bar"
                 />
             </div>
 
