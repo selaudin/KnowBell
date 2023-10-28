@@ -8,7 +8,12 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
+
 RUN npm install
+
+ENV REACT_APP_BACKEND_URL='testurl'
+ENV REACT_APP_EMAIL='knowbell@mail.com'
+ENV REACT_APP_PASS='password'
 
 # Copy the entire application code to the container
 COPY . .
