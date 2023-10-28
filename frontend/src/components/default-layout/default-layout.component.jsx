@@ -3,17 +3,31 @@ import {NavLink, TeamLogo} from "./default-layout.styles.jsx";
 import {useDispatch, useSelector} from "react-redux";
 import {logoutUser} from "../../store/user/user.action";
 import {selectCurrentUser} from "../../store/user/user.selector";
+import {AiOutlinePlus} from 'react-icons/ai'
+import {useEffect, useState} from "react";
 
 export default function DefaultLayout() {
     const user = useSelector(selectCurrentUser);
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
+    const [chats, setChats] = useState([])
+
+
+    useEffect(() => {
+        console.log('settings chats')
+        fetch('https://jsonplaceholder.typicode.com/albums')
+            .then(res => res.json())
+            .then(data => setChats(data))
+    }, []);
+
+
     if (!user) {
         // TODO: Set notification
         console.log("Not authenticated");
         return <Navigate to={"/login"}/>;
     }
+
 
     const onLogout = (e) => {
         e.preventDefault();
@@ -22,15 +36,24 @@ export default function DefaultLayout() {
     };
 
     return (
-        <div id={"defaultLayout"}>
-            <aside>
+        <div id={"defaultLayout"} style={{ display: 'flex' }}>
+            <aside style={{ flex: '0 0 280px', height: '100vh', overflowY: 'auto', padding: '5px'}}>
                 <TeamLogo>KnowBell</TeamLogo>
-                {/* TODO: Chat blocks (history)*/}
-                {/*<NavLink to={"/dashboard"}>*/}
-                {/*    Dashboard*/}
-                {/*</NavLink>*/}
+                {/*TODO: Chat blocks (history)*/}
+                <NavLink to={`/chat`}
+                style={{border: '1px solid white', borderRadius: '10px'}}
+                >
+                    <AiOutlinePlus style={{fontSize: '20px', marginRight: '20px'}}/> New Chat
+                </NavLink>
+                {
+                    chats.map(chat => (
+                        <NavLink key={chat.id} to={`/chat`}>
+                            {chat.title.charAt(0).toUpperCase() + chat.title.slice(1)}
+                        </NavLink>
+                    ))
+                }
             </aside>
-            <div className="content">
+            <div className="content" style={{ flex: '1', position: 'sticky', overflowY: 'auto', maxHeight: '100vh' }}>
                 <header>
                     <div>
                         <h2 id={"greeting"}>
