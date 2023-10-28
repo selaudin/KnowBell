@@ -3,7 +3,7 @@ import GuestLayout from "./components//guest-layout/guest-layout.components";
 import NotFound from "./pages/not-found/not-found.component";
 import Login from "./pages/login/login.component";
 import Signup from "./pages/signup/signup.component";
-import {DefaultLayout} from "./components/default-layout/default-layout.component";
+import DefaultLayout from "./components/default-layout/default-layout.component";
 import {Dashboard} from "./pages/dashboard/dashboard.component";
 
 
