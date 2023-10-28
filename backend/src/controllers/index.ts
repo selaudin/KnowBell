@@ -67,28 +67,10 @@ app.delete("/history", async (req: Request, res: Response) => {
 app.post("/history", async (req: Request, res: Response) => {
   const { userID } = req.query;
   const data = req.body;
-<<<<<<< Updated upstream
-
-  console.log({ data });
-=======
->>>>>>> Stashed changes
 
   const driver = await createDriver();
 
   const session = driver.session();
-<<<<<<< Updated upstream
-  try {
-    const createdUserHistoryRel = await session.run(
-      "MATCH (u:User where ID(u) = $userID) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
-      { history: data, userID: Number(userID) }
-    );
-    return res.status(200).json({
-      response: "Inserted into history",
-    });
-  } catch (error) {
-    return res.status(500).json({ response: "Failed to insert into history!" });
-  }
-=======
 
   const createdUserHistoryRel = await session.run(
     "MATCH (u:User {surname : 'Doe'}) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
@@ -96,7 +78,6 @@ app.post("/history", async (req: Request, res: Response) => {
   );
 
   return res.json(createdUserHistoryRel)
->>>>>>> Stashed changes
 });
 
 app.get("/history", async (req: Request, res: Response) => {
