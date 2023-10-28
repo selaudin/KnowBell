@@ -1,6 +1,8 @@
 import express, { Express, Request, Response, Application } from "express";
 import dotenv from "dotenv";
 import neo4j from "neo4j-driver";
+import { conversationResponse, conversation } from "../types/conversation";
+
 dotenv.config();
 
 const app: Application = express();
@@ -8,7 +10,6 @@ app.use(express.json());
 const port = process.env.PORT || 8000;
 
 export const createDriver = async () => {
-  console.log(process.env.NEO4J_URI, process.env.NEO4J_USER);
   const driver = neo4j.driver(
     String(process.env.NEO4J_URI),
     neo4j.auth.basic(
@@ -94,7 +95,7 @@ app.get("/history", async (req: Request, res: Response) => {
   const session = driver.session();
 
   const { records } = await session.run(
-    "MATCH (p:User where ID(p) = $userIDDB)-[r:HAS_HISTORY]->(h:History) return h, ID(h) as conversationID",
+    "MATCH (p:User where ID(p) = $userIDDB)-[r:HAS_HISTORY]->(h:History) return h, ID(h) as historyID",
     { userIDDB: Number(userID) }
   );
 
@@ -106,7 +107,7 @@ app.get("/history", async (req: Request, res: Response) => {
     const data = record.get("h");
 
     return {
-      conversation_id: record.get("conversationID").toInt(),
+      historyID: record.get("historyID").toInt(),
       title: data.properties.title,
       language: data.properties.language,
     };
@@ -114,6 +115,81 @@ app.get("/history", async (req: Request, res: Response) => {
 
   res.json(attributes);
 });
+
+app.get("/converation", async (req: Request, res: Response) => {
+  const { historyID } = req.query;
+  if (!historyID) {
+    return res.status(404).json({
+      response: "History not found!",
+    });
+  }
+  const driver = await createDriver();
+  const session = driver.session();
+  const { records } = await session.run(
+    "MATCH (h:History where ID(h) = $historyID)-[r:HAS_CONVERSATION]->(c:Conversation) return c, h ORDER BY c.createdAt ASC",
+    { historyID: Number(historyID) }
+  );
+
+  if (records.length <= 0) {
+    return res.status(404).json({
+      response: "No Conversation found!",
+    });
+  }
+
+  const historyRecord = records[0].get("h");
+  const historyTitle = historyRecord.properties.title;
+
+  const allConversations: conversation[] = records.map((record) => {
+    const singleRecord = record.get("c");
+    const createdAt = singleRecord.properties.createdAt;
+    return {
+      prompt: singleRecord.properties.prompt,
+      request: singleRecord.properties.request,
+      docs: singleRecord.properties.docs,
+      createdAt: new Date(
+        createdAt.year.low,
+        createdAt.month.low - 1,
+        createdAt.day.low,
+        createdAt.hour.low,
+        createdAt.minute.low,
+        createdAt.second.low,
+        createdAt.nanosecond.low / 1000000
+      ),
+    };
+  });
+
+  const conversationResponse: conversationResponse = {
+    historyID: Number(historyID),
+    title: historyTitle,
+    conversations: allConversations,
+  };
+
+  return res.status(200).json(conversationResponse);
+});
+
+app.post("/conversation", async (req: Request, res: Response) => {
+  const { historyID } = req.query;
+  const convo = req.body;
+
+  const driver = await createDriver();
+  const session = driver.session();
+
+  try {
+    const createdConvo = await session.run(
+      "MATCH (h:History where ID(h) = $historyID) CREATE (c:Conversation {createdAt: localdatetime()}) SET c += $convo CREATE (h)-[:HAS_CONVERSATION]->(c)",
+      { historyID: Number(historyID), convo: convo }
+    );
+  } catch (error) {
+    return res.status(500).json({
+      response: "Failed to create a new conversation",
+    });
+  }
+
+  return res.status(200).json({
+    response: "Successfully created conversation",
+  });
+});
+
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
