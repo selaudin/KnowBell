@@ -3,6 +3,7 @@ import {selectCurrentUser} from "../../store/user/user.selector";
 import {Navigate} from "react-router-dom";
 import {useRef, useState} from "react";
 import keyboardImage from '../../assets/keyboard.png'
+import WriteLikeChatGPT from 'write-like-chat-gpt'
 
 export function Dashboard() {
     const currentUser = useSelector(selectCurrentUser)
@@ -47,7 +48,7 @@ export function Dashboard() {
             {searchRef.current?.value && (
                 <div className={'docs-container'}
                      style={{marginTop: '10px', padding: '20px', height: '100vh', overflowY: 'auto'}}>
-                    {docs.map(doc => (<div className="doc" key={doc.id}>{doc.title}</div>))}
+                    {docs.map(doc => (<div className="doc" key={doc.id}><WriteLikeChatGPT text={doc.title} /></div>))}
                 </div>
             )}
         </div>
