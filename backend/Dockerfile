@@ -1,16 +1,21 @@
-FROM node:alpine
+FROM node:10.5.0
 
-# Create work directory
 WORKDIR /usr/src/app
 
-# Install runtime dependencies
-RUN npm install yarn -g
+RUN npm install -g typescript
 
-# Copy app source to work directory
-COPY . /usr/src/app
+RUN npm install -g nodemon
 
-# Install app dependencies
-RUN yarn install
+COPY package*.json ./
 
-# Build and run the app
-CMD npm start serve
+RUN npm install
+
+COPY . .
+
+EXPOSE 4040 5550
+
+#Build to project
+RUN npm run build
+
+# Run node server
+CMD npm run start
