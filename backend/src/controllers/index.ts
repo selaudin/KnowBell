@@ -54,26 +54,34 @@ app.get("/login", async (req: Request, res: Response) => {
   });
 });
 
+app.delete("/history", async (req: Request, res: Response) => {
+  const { id } = req.query;
+  const driver = await createDriver();
+
+  const session = driver.session();
+
+  const result = await session.run(
+    "MATCH (h:History) WHERE ID(h) = $history DETACH DELETE h",
+    { history: Number(id) }
+  );
+
+  res.status(200).end();
+});
+
 app.post("/history", async (req: Request, res: Response) => {
   const { userID } = req.query;
   const data = req.body;
 
-  console.log({ data });
-
   const driver = await createDriver();
 
   const session = driver.session();
-  try {
-    const createdUserHistoryRel = await session.run(
-      "MATCH (u:User where ID(u) = $userID) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
-      { history: data, userID: Number(userID) }
-    );
-    return res.status(200).json({
-      response: "Inserted into history",
-    });
-  } catch (error) {
-    return res.status(500).json({ response: "Failed to insert into history!" });
-  }
+
+  const createdUserHistoryRel = await session.run(
+    "MATCH (u:User {surname : 'Doe'}) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
+    { history: data }
+  );
+
+  return res.json(createdUserHistoryRel)
 });
 
 app.get("/history", async (req: Request, res: Response) => {
