@@ -13,13 +13,20 @@ export default function DefaultLayout() {
 
     const [chats, setChats] = useState([])
 
+    // useEffect(() => {
+    //     console.log('settings chats')
+    //     fetch('https://jsonplaceholder.typicode.com/albums')
+    //         .then(res => res.json())
+    //         .then(data => setChats(data))
+    // }, []);
 
     useEffect(() => {
         console.log('settings chats')
-        fetch('https://jsonplaceholder.typicode.com/albums')
-            .then(res => res.json())
+        fetch('/history.json') 
+            .then(response => response.json())
             .then(data => setChats(data))
-    }, []);
+            .catch(error => console.error('Error fetching data:', error));
+        }, []);
 
 
     if (!user) {
@@ -33,7 +40,7 @@ export default function DefaultLayout() {
         e.preventDefault();
         dispatch(logoutUser());
         navigate('/login')
-    };
+    };  
 
     return (
         <div id={"defaultLayout"} style={{ display: 'flex' }}>

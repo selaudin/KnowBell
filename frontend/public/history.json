@@ -1,0 +1,77 @@
+[
+    {
+        "conversation_id": 1,
+        "title": "Introduction to React",
+        "language": "EN"
+    },
+    {
+        "conversation_id": 2,
+        "title": "Grundlagen von JavaScript",
+        "language": "DE"
+    },
+    {
+        "conversation_id": 3,
+        "title": "Getting Started with Python",
+        "language": "EN"
+    },
+    {
+        "conversation_id": 4,
+        "title": "Fortgeschrittene CSS-Techniken",
+        "language": "DE"
+    },
+    {
+        "conversation_id": 5,
+        "title": "Machine Learning Basics",
+        "language": "EN"
+    },
+    {
+        "conversation_id": 6,
+        "title": "Einführung in die Datenbanken",
+        "language": "DE"
+    },
+    {
+        "conversation_id": 7,
+        "title": "Web Development with Node.js",
+        "language": "EN"
+    },
+    {
+        "conversation_id": 8,
+        "title": "Responsive Design Principles",
+        "language": "EN"
+    },
+    {
+        "conversation_id": 9,
+        "title": "Webdesign und Benutzerfreundlichkeit",
+        "language": "DE"
+    },
+    {
+        "conversation_id": 10,
+        "title": "Data Science for Beginners",
+        "language": "EN"
+    },
+    {
+        "conversation_id": 11,
+        "title": "Moderne Frontend-Frameworks",
+        "language": "DE"
+    },
+    {
+        "conversation_id": 12,
+        "title": "Exploring AI and Machine Learning",
+        "language": "EN"
+    },
+    {
+        "conversation_id": 13,
+        "title": "Backend-Entwicklung mit Java",
+        "language": "DE"
+    },
+    {
+        "conversation_id": 14,
+        "title": "Building Mobile Apps with React Native",
+        "language": "EN"
+    },
+    {
+        "conversation_id": 15,
+        "title": "Die Welt der Kryptowährungen",
+        "language": "DE"
+    }
+]
