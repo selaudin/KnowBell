@@ -11,9 +11,23 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from neomodel import config
+
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+
+db = os.getenv('DATABASE_URL')
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+config.DATABASE_URL = str(db)
 
 
 # Quick-start development settings - unsuitable for production
@@ -39,6 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'documents',
     'rest_framework',
+    'django_neomodel',
 ]
 
 MIDDLEWARE = [
