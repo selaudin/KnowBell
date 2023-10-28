@@ -13,7 +13,12 @@ export function Dashboard() {
 
     return (
         <div style={{textAlign: 'center'}}>
-            <h3>Search bar here...</h3>
+            <div style={{marginTop: "1%"}}>
+                <input
+                    placeholder={"Search"}
+                />
+            </div>
+
             <h3>Response here ....</h3>
             <h3>Documents here....</h3>
         </div>
