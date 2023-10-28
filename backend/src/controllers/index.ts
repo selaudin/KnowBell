@@ -1,8 +1,11 @@
 import express, { Express, Request, Response, Application } from "express";
 import dotenv from "dotenv";
 import neo4j from "neo4j-driver";
-//For env File
 dotenv.config();
+
+const app: Application = express();
+app.use(express.json())
+const port = process.env.PORT || 8000;
 
 export const createDriver = async () => {
   console.log(process.env.NEO4J_URI, process.env.NEO4J_USER);
@@ -16,9 +19,6 @@ export const createDriver = async () => {
 
   return driver;
 };
-
-const app: Application = express();
-const port = process.env.PORT || 8000;
 
 app.get("/", async (req: Request, res: Response) => {
   const driver = await createDriver();
@@ -50,18 +50,24 @@ app.get("/login", async (req: Request, res: Response) => {
   res.status(200).send("Sucessfully logged in as " + username);
 });
 
-app.post("/query", async (req: Request, res: Response) => {
+app.post("/history", async (req: Request, res: Response) => {
+  console.log(req);
+  const data = req.body;
+  
+  console.log({data});
+
   const driver = await createDriver();
 
   const session = driver.session();
 
-  const createdRec = await session.run(
-    "CREATE (p:User {surname : 'Doe', name: 'John'}) RETURN p.name AS name"
+  const createdUserHistoryRel = await session.run(
+    "MATCH (u:User {surname : 'Doe'}) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
+    {history: data}
   );
 
-  console.log(createdRec);
+  return res.json(createdUserHistoryRel)
 });
 
 app.listen(port, () => {
-  console.log(`Server is Fire at http://localhost:${port}`);
+  console.log(`Server is running at http://localhost:${port}`);
 });
