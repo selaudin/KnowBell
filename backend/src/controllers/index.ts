@@ -33,21 +33,25 @@ app.get("/", async (req: Request, res: Response) => {
 
 app.get("/login", async (req: Request, res: Response) => {
   const { username, password } = req.query;
+
+  console.log(username, password);
   const driver = await createDriver();
 
   const session = driver.session();
 
   const { records } = await session.run(
-    "MATCH (p:User {surname: $propertyValue, name: $password }) return p",
+    "MATCH (p:User {surname: $propertyValue, name: $password }) RETURN ID(p) AS userId, p",
     { propertyValue: username, password: password }
   );
-
   if (records.length <= 0) {
     res.status(401).send("Login Failed!");
     return;
   }
 
-  res.status(200).send("Sucessfully logged in as " + username);
+  res.status(200).json({
+    message: "Successfully logged in!",
+    userID: records[0].get("userId").toInt(),
+  });
 });
 
 app.post("/history", async (req: Request, res: Response) => {
