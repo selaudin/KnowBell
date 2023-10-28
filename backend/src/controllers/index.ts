@@ -51,6 +51,7 @@ app.get("/login", async (req: Request, res: Response) => {
 });
 
 app.post("/history", async (req: Request, res: Response) => {
+  const { userID } = req.query;
   const data = req.body;
 
   console.log({ data });
@@ -60,8 +61,8 @@ app.post("/history", async (req: Request, res: Response) => {
   const session = driver.session();
   try {
     const createdUserHistoryRel = await session.run(
-      "MATCH (u:User {surname : 'Doe'}) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
-      { history: data }
+      "MATCH (u:User where ID(u) = $userID) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
+      { history: data, userID: Number(userID) }
     );
     return res.status(200).json({
       response: "Inserted into history",
