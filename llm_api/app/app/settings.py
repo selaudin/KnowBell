@@ -26,6 +26,7 @@ from dotenv import load_dotenv
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 db = os.getenv('DATABASE_URL')
+openai_key = os.getenv('OPENAI_KEY')
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 config.DATABASE_URL = str(db)
 
@@ -54,6 +55,7 @@ INSTALLED_APPS = [
     'documents',
     'rest_framework',
     'django_neomodel',
+    'querys'
 ]
 
 MIDDLEWARE = [
