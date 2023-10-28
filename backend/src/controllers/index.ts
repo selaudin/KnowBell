@@ -75,23 +75,26 @@ app.post("/history", async (req: Request, res: Response) => {
   const driver = await createDriver();
 
   const session = driver.session();
-
-  const createdUserHistoryRel = await session.run(
-    "MATCH (u:User {surname : 'Doe'}) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
-    { history: data }
-  );
-
-  return res.json(createdUserHistoryRel)
+  try {
+    const createdUserHistoryRel = await session.run(
+      "MATCH (u:User where ID(u) = $userID) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
+      { history: data, userID: Number(userID) }
+    );
+    return res.status(200).json({
+      response: "Inserted into history",
+    });
+  } catch (error) {
+    return res.status(500).json({ response: "Failed to insert into history!" });
+  }
 });
 
 app.get("/history", async (req: Request, res: Response) => {
   const { userID } = req.query;
   const driver = await createDriver();
   const session = driver.session();
-  console.log(userID);
 
   const { records } = await session.run(
-    "MATCH (p:User where ID(p) = $userIDDB)-[r:HAS_HISTORY]->(h:History) return h",
+    "MATCH (p:User where ID(p) = $userIDDB)-[r:HAS_HISTORY]->(h:History) return h, ID(h) as conversationID",
     { userIDDB: Number(userID) }
   );
 
@@ -101,9 +104,10 @@ app.get("/history", async (req: Request, res: Response) => {
 
   const attributes = records.map((record) => {
     const data = record.get("h");
+
     return {
+      conversation_id: record.get("conversationID").toInt(),
       title: data.properties.title,
-      description_uri: data.properties.description_uri,
       language: data.properties.language,
     };
   });
