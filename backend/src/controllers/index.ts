@@ -13,6 +13,7 @@ import {
   createdResponse,
   docs,
 } from "../types/conversation";
+import axios from "axios";
 
 dotenv.config();
 
@@ -85,6 +86,7 @@ app.post("/search", async (req: Request, res: Response) => {
   const { userID, historyID } = req.query;
   const data = req.body;
 
+  console.log({ data });
   const convo = req.body;
   const prompt = "Prompt from MML";
   const results: docs[] = [];
@@ -94,9 +96,17 @@ app.post("/search", async (req: Request, res: Response) => {
   const session = driver.session();
 
   if (!historyID) {
-    const { response, statusCode, hID} = await createHistory(Number(userID), data[0].question);
+    const { response, statusCode, hID } = await createHistory(
+      Number(userID),
+      data[0].question
+    );
 
     if (statusCode === 200) {
+      const axiosResp = await axios.get(
+        `http://185.119.87.85:8001/api/questions/get_answer?question=${data[0].question}`
+      );
+
+      
       const createdHistoryConversationRel = await session.run(
         "MATCH (h:History) WHERE ID(h) = $hID CREATE (c:Conversation {createdAt: localdatetime()}) SET c += $conversation CREATE (h)-[:HAS_CONVERSATION]->(c)",
         { conversation: data, hID: Number(hID) }
@@ -120,18 +130,25 @@ async function createHistory(
 
   const session = driver.session();
 
-  const response = await fetch(
-    "http://185.119.87.85:8000/api/questions/get_title?question=" + question
+  const axiosResponse = await axios.get(
+    `http://185.119.87.85:8001/api/questions/get_title?question=${question}`
   );
-  if (!response.ok) {
+  console.log(axiosResponse);
+
+  if (axiosResponse.status !== 200) {
     const response = {
       statusCode: 500,
       response: "Failed to fetch title",
     };
     return response;
   }
+  const responseData = axiosResponse.data;
+  const allTitles = responseData.title
+    .split("\n")
+    .filter((step: any) => step.trim() !== "");
+
   let historyData = {
-    title: "Test",
+    title: allTitles[0],
   };
   try {
     const createdUserHistoryRel = await session.run(
@@ -141,7 +158,7 @@ async function createHistory(
     const historyID: number = createdUserHistoryRel.records[0].get("nodeId");
     const response = {
       statusCode: 200,
-      response: "Successfully created conversation",
+      response: "Successfully created History",
     };
     return {
       response: response,
@@ -151,7 +168,7 @@ async function createHistory(
   } catch (error) {
     const response = {
       statusCode: 500,
-      response: "Successfully created conversation",
+      response: "Error creating History",
     };
 
     return {
