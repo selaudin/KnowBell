@@ -1,0 +1,123 @@
+[
+    {
+      "historyID": 1,
+      "title": "Programming Questions",
+      "conversations": [
+        {
+          "prompt": "How do I learn programming?",
+          "request": "What are some good programming resources for beginners?",
+          "docs": [
+            "https://learnprogramming.com",
+            "https://codingacademy.com"
+          ],
+          "createdAt": "2023-10-28T20:33:15.425Z"
+        },
+        {
+          "prompt": "Which programming language is best for web development?",
+          "request": "Can you recommend a web development programming language?",
+          "docs": [
+            "https://webdevelopment101.com",
+            "https://programminglanguages.com"
+          ],
+          "createdAt": "2023-10-28T20:38:16.181Z"
+        }
+      ]
+    },
+    {
+      "historyID": 2,
+      "title": "Travel Recommendations",
+      "conversations": [
+        {
+          "prompt": "Where should I go for my next vacation?",
+          "request": "What are some great vacation destinations?",
+          "docs": [
+            "https://traveldestinations.com",
+            "https://vacationplanner.com"
+          ],
+          "createdAt": "2023-10-28T21:00:00.000Z"
+        },
+        {
+          "prompt": "What are the best travel tips for a budget trip?",
+          "request": "Give me budget travel tips for my trip.",
+          "docs": [
+            "https://budgettravelguide.com",
+            "https://travelonabudget.com"
+          ],
+          "createdAt": "2023-10-28T21:15:00.000Z"
+        }
+      ]
+    },
+    {
+      "historyID": 3,
+      "title": "Recipe Ideas",
+      "conversations": [
+        {
+          "prompt": "I want to cook something delicious today.",
+          "request": "Can you suggest a tasty recipe for dinner?",
+          "docs": [
+            "https://deliciousrecipes.com",
+            "https://cookingideas.com"
+          ],
+          "createdAt": "2023-10-28T21:30:00.000Z"
+        },
+        {
+          "prompt": "What's a quick and easy dessert to make?",
+          "request": "Give me a simple dessert recipe.",
+          "docs": [
+            "https://easydesserts.com",
+            "https://quickrecipes.com"
+          ],
+          "createdAt": "2023-10-28T21:45:00.000Z"
+        }
+      ]
+    },
+    {
+      "historyID": 4,
+      "title": "Fitness Tips",
+      "conversations": [
+        {
+          "prompt": "How can I stay fit and healthy?",
+          "request": "Share some fitness tips for a healthy lifestyle.",
+          "docs": [
+            "https://fitandhealthy.com",
+            "https://workouttips.com"
+          ],
+          "createdAt": "2023-10-28T22:00:00.000Z"
+        },
+        {
+          "prompt": "What's a good workout routine for beginners?",
+          "request": "Provide a beginner-friendly workout plan.",
+          "docs": [
+            "https://beginnerworkouts.com",
+            "https:getinshape.com"
+          ],
+          "createdAt": "2023-10-28T22:15:00.000Z"
+        }
+      ]
+    },
+    {
+      "historyID": 5,
+      "title": "Book Recommendations",
+      "conversations": [
+        {
+          "prompt": "I love reading. What book should I read next?",
+          "request": "Can you suggest a great book to read?",
+          "docs": [
+            "https://bookrecommendations.com",
+            "https://bestbooks.com"
+          ],
+          "createdAt": "2023-10-28T22:30:00.000Z"
+        },
+        {
+          "prompt": "I'm looking for a mystery novel. Any recommendations?",
+          "request": "Recommend a mystery book to read.",
+          "docs": [
+            "https://mysterynovels.com",
+            "https://bookstore.com"
+          ],
+          "createdAt": "2023-10-28T22:45:00.000Z"
+        }
+      ]
+    }
+  ]
+  
