@@ -31,9 +31,9 @@ import requests
 # Create your views here.
 @api_view(['GET'])
 def load_data(request):
-    vector_db = vectorize_the_context()
+    # vector_db = vectorize_the_context()
     # get_answer(vector_db)
-    # answer_promt()
+    answer_promt()
     return Response()
 
 
@@ -51,7 +51,7 @@ def get_context_tag(text):
 
 
 def vectorize_the_context():
-    openai_key = "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"
+    openai_key = "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"
     from langchain.document_loaders import PyPDFLoader
     directory = os.path.join(settings.BASE_DIR, "documents/docs/")
     # print([os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.pdf')])
@@ -93,7 +93,7 @@ def vectorize_the_context():
 def get_answer(vectordb):
     def pretty_print_docs(docs):
         print(f"\n{'-' * 100}\n".join([f"Document {i+1}:\n\n" + d.page_content for i, d in enumerate(docs)]))
-    openai_key = "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"
+    openai_key = "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"
 
     question = "is there an email i can ask for help"
 
@@ -140,3 +140,38 @@ def get_answer(vectordb):
     pretty_print_docs(docs)
 
 
+
+
+def answer_promt():
+    openai_key = "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"
+
+    # Load vector database that was persisted earlier and check collection count in it
+    from langchain.vectorstores import Chroma
+    from langchain.embeddings.openai import OpenAIEmbeddings
+    from langchain.chains import RetrievalQA
+    from langchain.prompts import PromptTemplate
+    from langchain.chat_models import ChatOpenAI
+    persist_directory = os.path.join(settings.BASE_DIR, "mydata")
+    embedding = OpenAIEmbeddings(openai_api_key=openai_key)
+    vectordb = Chroma(persist_directory=persist_directory, embedding_function=embedding)
+    llm = ChatOpenAI(temperature=0, openai_api_key=openai_key)
+
+    template = """Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that "you don't know, Can you provide us more hints", don't try to make up an answer. Use three sentences maximum. Keep the answer as concise as possible. Always say "Thanks" at the end of the answer. 
+    {context}
+    Question: {question}
+    Helpful Answer:"""
+    QA_CHAIN_PROMPT = PromptTemplate.from_template(template)# Run chain
+    qa_chain = RetrievalQA.from_chain_type(
+        llm,
+        retriever=vectordb.as_retriever(),
+        return_source_documents=True,
+        chain_type_kwargs={"prompt": QA_CHAIN_PROMPT}
+        )
+    question = "how can i use Cico Jabber"
+    result = qa_chain({"query": question})
+    # Check the result of the query
+    print(result["result"])
+    # # Check the source document from where we 
+    print(result["source_documents"][0])
+
+    

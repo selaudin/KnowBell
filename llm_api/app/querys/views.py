@@ -14,7 +14,7 @@ import os
 def get_title_(request):
     # openai_key = settings.openai_key
     from langchain.llms import OpenAI    
-    openai_key = "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"
+    openai_key = "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"
     
     llm = OpenAI(openai_api_key=openai_key)
     question = request.query_params.get('question')
@@ -26,7 +26,7 @@ def get_title_(request):
 
 @api_view(['GET'])
 def answer_promt(request):
-    openai_key = "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"
+    openai_key = "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"
 
     # Load vector database that was persisted earlier and check collection count in it
     from langchain.vectorstores import Chroma
