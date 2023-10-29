@@ -21,7 +21,6 @@ export default function DefaultLayout() {
     // }, []);
 
     useEffect(() => {
-        console.log('settings chats')
         fetch('/history.json') 
             .then(response => response.json())
             .then(data => setChats(data))
@@ -47,14 +46,14 @@ export default function DefaultLayout() {
             <aside style={{ flex: '0 0 280px', height: '100vh', overflowY: 'auto', padding: '5px'}}>
                 <TeamLogo>KnowBell</TeamLogo>
                 {/*TODO: Chat blocks (history)*/}
-                <NavLink to={`/chat`}
+                <NavLink to={`/dashboard`}
                 style={{border: '1px solid white', borderRadius: '10px'}}
                 >
                     <AiOutlinePlus style={{fontSize: '20px', marginRight: '20px'}}/> New Chat
                 </NavLink>
                 {
                     chats.map(chat => (
-                        <NavLink key={chat.id} to={`/chat`}>
+                        <NavLink language={chat.language} key={chat.conversation_id} to={`/dashboard/`+chat.conversation_id}>
                             {chat.title.charAt(0).toUpperCase() + chat.title.slice(1)}
                         </NavLink>
                     ))

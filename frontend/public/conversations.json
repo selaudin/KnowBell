@@ -4,7 +4,7 @@
       "title": "Programming Questions",
       "conversations": [
         {
-          "prompt": "How do I learn programming?",
+          "prompt": "First you need to learn how to program",
           "request": "What are some good programming resources for beginners?",
           "docs": [
             "https://learnprogramming.com",
@@ -28,7 +28,7 @@
       "title": "Travel Recommendations",
       "conversations": [
         {
-          "prompt": "Where should I go for my next vacation?",
+          "prompt": "I would suggest to go to Italy!",
           "request": "What are some great vacation destinations?",
           "docs": [
             "https://traveldestinations.com",
@@ -52,7 +52,7 @@
       "title": "Recipe Ideas",
       "conversations": [
         {
-          "prompt": "I want to cook something delicious today.",
+          "prompt": "I don't know how to cook :|, but here are some cooking books that have some recipes: ",
           "request": "Can you suggest a tasty recipe for dinner?",
           "docs": [
             "https://deliciousrecipes.com",
@@ -76,7 +76,7 @@
       "title": "Fitness Tips",
       "conversations": [
         {
-          "prompt": "How can I stay fit and healthy?",
+          "prompt": "Stay fit and healthy, easyyyyyyy!",
           "request": "Share some fitness tips for a healthy lifestyle.",
           "docs": [
             "https://fitandhealthy.com",
