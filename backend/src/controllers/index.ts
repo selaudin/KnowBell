@@ -1,5 +1,6 @@
 import express, { Express, Request, Response, Application, request } from "express";
 import dotenv from "dotenv";
+import cors from 'cors'
 import neo4j, { Driver, Session } from "neo4j-driver";
 import {
   conversationResponse,
@@ -11,15 +12,19 @@ import {
 dotenv.config();
 
 const app: Application = express();
+
 app.use(express.json());
-const port = process.env.PORT || 8000;
+
+app.use(cors())
+
+const port = 8000;
 
 export const createDriver = async () => {
   const driver = neo4j.driver(
-    String(process.env.NEO4J_URI),
+    String('neo4j+s://1face838.databases.neo4j.io'),
     neo4j.auth.basic(
-      String(process.env.NEO4J_USER),
-      String(process.env.NEO4J_PASSWORD)
+      String('neo4j'),
+      String('abIABwzjtj2Nm3P4ytNJV_T1T39BHw7JBao-75VlQH8')
     )
   );
 
