@@ -86,7 +86,6 @@ app.post("/search", async (req: Request, res: Response) => {
   const { userID, historyID } = req.query;
   const data = req.body;
 
-  console.log({ data });
   const convo = req.body;
   const prompt = "Prompt from MML";
   const results: docs[] = [];
@@ -111,8 +110,6 @@ app.post("/search", async (req: Request, res: Response) => {
         prompt: axiosResponse.data.results.result,
         request: data[0].question,
       }
-
-      console.log({mappedAxiosResponse});
 
       const createdHistoryConversationResponse = await session.run(
         "MATCH (h:History) WHERE ID(h) = $hID CREATE (c:Conversation {createdAt: localdatetime()}) SET c += $conversation CREATE (h)-[:HAS_CONVERSATION]->(c)",
@@ -140,7 +137,6 @@ async function createHistory(
   const axiosResponse = await axios.get(
     `http://185.119.87.85:8001/api/questions/get_title?question=${question}`
   );
-  console.log(axiosResponse);
 
   if (axiosResponse.status !== 200) {
     const response = {
