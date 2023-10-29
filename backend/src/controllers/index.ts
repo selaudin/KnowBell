@@ -34,8 +34,6 @@ app.get("/", async (req: Request, res: Response) => {
 
 app.get("/login", async (req: Request, res: Response) => {
   const { username, password } = req.query;
-
-  console.log(username, password);
   const driver = await createDriver();
 
   const session = driver.session();
@@ -45,28 +43,30 @@ app.get("/login", async (req: Request, res: Response) => {
     { propertyValue: username, password: password }
   );
   if (records.length <= 0) {
-    res.status(401).send("Login Failed!");
+    res.status(401).json({
+      response: "Login Failed!",
+    });
     return;
   }
 
   res.status(200).json({
-    message: "Successfully logged in!",
+    response: "Successfully logged in!",
     userID: records[0].get("userId").toInt(),
   });
 });
 
 app.delete("/history", async (req: Request, res: Response) => {
-  const { id } = req.query;
+  const { historyID, userID } = req.query;
   const driver = await createDriver();
 
   const session = driver.session();
 
   const result = await session.run(
     "MATCH (h:History) WHERE ID(h) = $history DETACH DELETE h",
-    { history: Number(id) }
+    { history: Number(historyID) }
   );
 
-  res.status(200).end();
+  res.status(200).json(await getHistoryByUser(Number(userID)));
 });
 
 app.post("/history", async (req: Request, res: Response) => {
@@ -91,7 +91,7 @@ app.post("/history", async (req: Request, res: Response) => {
 
 app.get("/history", async (req: Request, res: Response) => {
   const { userID } = req.query;
-  const driver = await createDriver();
+  /* const driver = await createDriver();
   const session = driver.session();
 
   const { records } = await session.run(
@@ -111,16 +111,16 @@ app.get("/history", async (req: Request, res: Response) => {
       title: data.properties.title,
       language: data.properties.language,
     };
-  });
+  }); */
 
-  res.json(attributes);
+  res.status(200).json(await getHistoryByUser(Number(userID)));
 });
 
-app.get("/converation", async (req: Request, res: Response) => {
+app.get("/conversation", async (req: Request, res: Response) => {
   const { historyID } = req.query;
   if (!historyID) {
     return res.status(404).json({
-      response: "History not found!",
+      response: "historyID is required!",
     });
   }
   const driver = await createDriver();
@@ -189,6 +189,48 @@ app.post("/conversation", async (req: Request, res: Response) => {
     response: "Successfully created conversation",
   });
 });
+
+const getLLMData = async (request: string) => {
+  const requestURL: string = (process.env.LLM_URI as string) + "/search";
+  const response = await fetch(requestURL, {
+    method: "GET",
+    mode: "cors",
+    cache: "no-cache",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    //TODO Error Handling
+  }
+
+  return await response.json();
+};
+
+const getHistoryByUser = async (userID: Number) => {
+  const driver = await createDriver();
+  const session = driver.session();
+
+  const { records } = await session.run(
+    "MATCH (p:User where ID(p) = $userIDDB)-[r:HAS_HISTORY]->(h:History) return h, ID(h) as historyID",
+    { userIDDB: Number(userID) }
+  );
+
+  if (records.length <= 0) {
+    return [];
+  }
+
+  const attributes = records.map((record) => {
+    const data = record.get("h");
+
+    return {
+      historyID: record.get("historyID").toInt(),
+      title: data.properties.title,
+      language: data.properties.language,
+    };
+  });
+  return attributes;
+};
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
