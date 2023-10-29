@@ -18,4 +18,5 @@ export type conversationResponse = {
 export type createdResponse = {
   statusCode: number;
   response: {};
+  hID?: number | null
 };
