@@ -102,16 +102,23 @@ app.post("/search", async (req: Request, res: Response) => {
     );
 
     if (statusCode === 200) {
-      const axiosResp = await axios.get(
+      const axiosResponse = await axios.get(
         `http://185.119.87.85:8001/api/questions/get_answer?question=${data[0].question}`
       );
 
-      
-      const createdHistoryConversationRel = await session.run(
+      const mappedAxiosResponse = {
+        docs: axiosResponse.data.results.source_documents.map((document: any) => document[1][1].source),
+        prompt: axiosResponse.data.results.result,
+        request: data[0].question,
+      }
+
+      console.log({mappedAxiosResponse});
+
+      const createdHistoryConversationResponse = await session.run(
         "MATCH (h:History) WHERE ID(h) = $hID CREATE (c:Conversation {createdAt: localdatetime()}) SET c += $conversation CREATE (h)-[:HAS_CONVERSATION]->(c)",
-        { conversation: data, hID: Number(hID) }
+        { conversation: mappedAxiosResponse, hID: Number(hID) }
       );
-      return res.json(createdHistoryConversationRel);
+      return res.json(mappedAxiosResponse);
     }
   } else {
     const appendHistoryConversationRel = await session.run(
@@ -258,23 +265,6 @@ app.post("/conversation", async (req: Request, res: Response) => {
     .status(addConvoResponse.statusCode)
     .json(addConvoResponse.response);
 });
-
-const getLLMData = async (request: string) => {
-  const requestURL: string = (process.env.LLM_URI as string) + "/search";
-  const response = await fetch(requestURL, {
-    method: "GET",
-    mode: "cors",
-    cache: "no-cache",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  if (!response.ok) {
-    //TODO Error Handling
-  }
-
-  return await response.json();
-};
 
 const addConversation = async (
   conversationData: conversation,
