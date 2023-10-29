@@ -89,30 +89,14 @@ app.post("/search", async (req: Request, res: Response) => {
   const prompt = "Prompt from MML";
   const results: docs[] = [];
 
-  const convoObj: conversation = {
-    prompt: prompt,
-    request: req.body,
-    docs: results,
-  };
-
   const driver = await createDriver();
 
   const session = driver.session();
 
-  const createdUserHistoryRel = await session.run(
-    "MATCH (u:User where ID(u) = $userID) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
-    { history: data, userID: Number(userID) }
-  );
-
   if (!historyID) {
-    const returnedVal = await createHistory(Number(userID), data[0].question);
+    const { response, statusCode, hID} = await createHistory(Number(userID), data[0].question);
 
-    const response = Number(returnedVal.response);
-
-    if (response == 200) {
-      const hID = response 
-      console.log(hID);
-
+    if (statusCode === 200) {
       const createdHistoryConversationRel = await session.run(
         "MATCH (h:History) WHERE ID(h) = $hID CREATE (c:Conversation {createdAt: localdatetime()}) SET c += $conversation CREATE (h)-[:HAS_CONVERSATION]->(c)",
         { conversation: data, hID: Number(hID) }
@@ -128,7 +112,10 @@ app.post("/search", async (req: Request, res: Response) => {
   }
 });
 
-async function createHistory(userID: number, question: string) {
+async function createHistory(
+  userID: number,
+  question: string
+): Promise<createdResponse> {
   const driver = await createDriver();
 
   const session = driver.session();
@@ -139,80 +126,44 @@ async function createHistory(userID: number, question: string) {
   if (!response.ok) {
     const response = {
       statusCode: 500,
-      response: {
-        response: "Failed to fetch title",
-      },
+      response: "Failed to fetch title",
     };
     return response;
   }
   let historyData = {
-    title: "Test"
-  }
+    title: "Test",
+  };
   try {
     const createdUserHistoryRel = await session.run(
       "MATCH (u:User) WHERE ID(u) = $uID CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h) return ID(h) as nodeId",
       { history: historyData, uID: userID }
     );
     const historyID: number = createdUserHistoryRel.records[0].get("nodeId");
-    const response: createdResponse = {
+    const response = {
       statusCode: 200,
-      response: {
-        response: "Successfully created conversation",
-      },
+      response: "Successfully created conversation",
     };
-    const returnData = { response: response, hID: historyID };
-    return returnData;
+    return {
+      response: response,
+      hID: historyID,
+      statusCode: 200,
+    };
   } catch (error) {
-    const response: createdResponse = {
+    const response = {
       statusCode: 500,
-      response: {
-        response: "Successfully created conversation",
-      },
+      response: "Successfully created conversation",
     };
-    const returnData = { response: response, hID: null };
-    return returnData;
+
+    return {
+      response,
+      hID: null,
+      statusCode: 200,
+    };
   }
 }
 
-// app.post("/history", async (req: Request, res: Response) => {
-//   const { userID } = req.query;
-//   const data = req.body;
-
-//   const driver = await createDriver();
-
-//   const session = driver.session();
-
-//   const createdUserHistoryRel = await session.run(
-//     "MATCH (u:User {surname : 'Doe'}) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
-//     { history: data }
-//   );
-
-//   return res.json(createdUserHistoryRel)
-// });
-
 app.get("/history", async (req: Request, res: Response) => {
   const { userID } = req.query;
-  /* const driver = await createDriver();
-  const session = driver.session();
-
-  const { records } = await session.run(
-    "MATCH (p:User where ID(p) = $userIDDB)-[r:HAS_HISTORY]->(h:History) return h, ID(h) as historyID",
-    { userIDDB: Number(userID) }
-  );
-
-  if (records.length <= 0) {
-    return res.status(200).json([]);
-  }
-
-  const attributes = records.map((record) => {
-    const data = record.get("h");
-
-    return {
-      historyID: record.get("historyID").toInt(),
-      title: data.properties.title,
-      language: data.properties.language,
-    };
-  }); */
 
   res.status(200).json(await getHistoryByUser(Number(userID)));
 });
