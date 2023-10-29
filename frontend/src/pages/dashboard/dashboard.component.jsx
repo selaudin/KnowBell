@@ -31,7 +31,7 @@ export function Dashboard() {
             }
           })
           .catch((error) => console.error('Error fetching data:', error));
-      }, []);
+      }, [id]);
 
     const handleSubmit = (e) => {
         e.preventDefault()
@@ -60,15 +60,23 @@ export function Dashboard() {
             <form onSubmit={handleSubmit} style={{position: 'sticky'}}>
                 <input ref={searchRef} placeholder={"Search"} id="search-bar"/>
             </form>
-            {docs ? (
+            {id ? (
                 <div className={'docs-container'}
                      style={{marginTop: '10px', padding: '20px', height: '100vh', overflowY: 'auto'}}>
                     {
                     filteredDocs.map((doc, index) => {
                         console.log(doc);
                         return (
-                        <div className="doc" key={index}>
-                            <WriteLikeChatGPT text={doc.conversations[0].prompt} />
+                        <div>
+                            {doc.conversations.map((conv) => (
+                                <div className="doc" key={index}>
+                                     <div>Q: {conv.request}</div>
+                                     <div>A: {conv.prompt}</div>
+                                     {/* <WriteLikeChatGPT text={`A: ${conv.prompt}`} /> */}
+                                   {/* <WriteLikeChatGPT text={` A: ${conv.prompt}`}/> */}
+                                </div>
+                            ))}
+                            {/* <WriteLikeChatGPT text={doc.conversations[0].prompt} /> */}
                         </div>
                         );
                     })
