@@ -1,4 +1,10 @@
-import express, { Express, Request, Response, Application, request } from "express";
+import express, {
+  Express,
+  Request,
+  Response,
+  Application,
+  request,
+} from "express";
 import dotenv from "dotenv";
 import cors from 'cors'
 import neo4j, { Driver, Session } from "neo4j-driver";
@@ -8,6 +14,7 @@ import {
   createdResponse,
   docs,
 } from "../types/conversation";
+import axios from "axios";
 
 dotenv.config();
 
@@ -88,123 +95,100 @@ app.post("/search", async (req: Request, res: Response) => {
   const prompt = "Prompt from MML";
   const results: docs[] = [];
 
-  const convoObj: conversation = {
-    prompt: prompt,
-    request: req.body,
-    docs: results,
-  };
-
   const driver = await createDriver();
 
   const session = driver.session();
 
-  const createdUserHistoryRel = await session.run(
-    "MATCH (u:User where ID(u) = $userID) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
-    { history: data, userID: Number(userID) }
-  );
-
   if (!historyID) {
-    const returnedVal = createHistory(Number(userID), data)
+    const { response, statusCode, hID } = await createHistory(
+      Number(userID),
+      data[0].question
+    );
 
-    const response = Number((await returnedVal).response.statusCode)
-    
-    if (response == 200) {
-      const hID = Number((await returnedVal).hID)
-      console.log(hID)
-  
-      const createdHistoryConversationRel = await session.run(
-        "MATCH (h:History) WHERE ID(h) = $hID CREATE (c:Conversation {createdAt: localdatetime()}) SET c += $conversation CREATE (h)-[:HAS_CONVERSATION]->(c)",
-        { conversation: data, hID: Number(hID) }
+    if (statusCode === 200) {
+      const axiosResponse = await axios.get(
+        `http://185.119.87.85:8001/api/questions/get_answer?question=${data[0].question}`
       );
-      return res.json(createdHistoryConversationRel)
-    } 
+
+      const mappedAxiosResponse = {
+        docs: axiosResponse.data.results.source_documents.map((document: any) => document[1][1].source),
+        prompt: axiosResponse.data.results.result,
+        request: data[0].question,
+      }
+
+      const createdHistoryConversationResponse = await session.run(
+        "MATCH (h:History) WHERE ID(h) = $hID CREATE (c:Conversation {createdAt: localdatetime()}) SET c += $conversation CREATE (h)-[:HAS_CONVERSATION]->(c)",
+        { conversation: mappedAxiosResponse, hID: Number(hID) }
+      );
+      return res.json(mappedAxiosResponse);
+    }
   } else {
     const appendHistoryConversationRel = await session.run(
       "MATCH (h:History) WHERE ID(h) = $history CREATE (c:Conversation {createdAt: localdatetime()}) SET c += $conversation CREATE (h)-[:HAS_CONVERSATION]->(c)",
       { conversation: data, history: Number(historyID) }
     );
-    return res.json(appendHistoryConversationRel)
+    return res.json(appendHistoryConversationRel);
   }
-
 });
 
-async function createHistory(userID: number, retrievedData: string) {
-  const data = retrievedData;
-
+async function createHistory(
+  userID: number,
+  question: string
+): Promise<createdResponse> {
   const driver = await createDriver();
 
   const session = driver.session();
 
+  const axiosResponse = await axios.get(
+    `http://185.119.87.85:8001/api/questions/get_title?question=${question}`
+  );
+
+  if (axiosResponse.status !== 200) {
+    const response = {
+      statusCode: 500,
+      response: "Failed to fetch title",
+    };
+    return response;
+  }
+  const responseData = axiosResponse.data;
+  const allTitles = responseData.title
+    .split("\n")
+    .filter((step: any) => step.trim() !== "");
+
+  let historyData = {
+    title: allTitles[0],
+  };
   try {
     const createdUserHistoryRel = await session.run(
       "MATCH (u:User) WHERE ID(u) = $uID CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h) return ID(h) as nodeId",
-      { history: data, uID: userID }
+      { history: historyData, uID: userID }
     );
     const historyID: number = createdUserHistoryRel.records[0].get("nodeId");
-    const response: createdResponse = {
+    const response = {
       statusCode: 200,
-      response: {
-        response: "Successfully created conversation",
-      }
-    }
-    const returnData = { "response": response, "hID": historyID }
-    return returnData
+      response: "Successfully created History",
+    };
+    return {
+      response: response,
+      hID: historyID,
+      statusCode: 200,
+    };
   } catch (error) {
-    const response: createdResponse = {
+    const response = {
       statusCode: 500,
-      response: {
-        response: "Successfully created conversation",
-      }
-    }
-    const returnData = { "response": response, "hID": null}
-    return returnData
+      response: "Error creating History",
+    };
+
+    return {
+      response,
+      hID: null,
+      statusCode: 200,
+    };
   }
-
-
-
-
-
 }
-
-// app.post("/history", async (req: Request, res: Response) => {
-//   const { userID } = req.query;
-//   const data = req.body;
-
-//   const driver = await createDriver();
-
-//   const session = driver.session();
-
-//   const createdUserHistoryRel = await session.run(
-//     "MATCH (u:User {surname : 'Doe'}) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
-//     { history: data }
-//   );
-
-//   return res.json(createdUserHistoryRel)
-// });
 
 app.get("/history", async (req: Request, res: Response) => {
   const { userID } = req.query;
-  /* const driver = await createDriver();
-  const session = driver.session();
-
-  const { records } = await session.run(
-    "MATCH (p:User where ID(p) = $userIDDB)-[r:HAS_HISTORY]->(h:History) return h, ID(h) as historyID",
-    { userIDDB: Number(userID) }
-  );
-
-  if (records.length <= 0) {
-    return res.status(200).json([]);
-  }
-
-  const attributes = records.map((record) => {
-    const data = record.get("h");
-
-    return {
-      historyID: record.get("historyID").toInt(),
-      title: data.properties.title,
-      language: data.properties.language,
-    };
-  }); */
 
   res.status(200).json(await getHistoryByUser(Number(userID)));
 });
@@ -282,23 +266,6 @@ app.post("/conversation", async (req: Request, res: Response) => {
     .status(addConvoResponse.statusCode)
     .json(addConvoResponse.response);
 });
-
-const getLLMData = async (request: string) => {
-  const requestURL: string = (process.env.LLM_URI as string) + "/search";
-  const response = await fetch(requestURL, {
-    method: "GET",
-    mode: "cors",
-    cache: "no-cache",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  if (!response.ok) {
-    //TODO Error Handling
-  }
-
-  return await response.json();
-};
 
 const addConversation = async (
   conversationData: conversation,
