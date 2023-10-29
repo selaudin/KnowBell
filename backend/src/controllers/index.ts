@@ -62,9 +62,10 @@ app.delete("/history", async (req: Request, res: Response) => {
   const driver = await createDriver();
 
   const session = driver.session();
-
+  //"MATCH (h:History WHERE ID(h) = $history)-[:HAS_CONVERSATION]->(c:Conversation)-[r]->(relatedNode) DETACH DELETE h, relatedNode",
+  
   const result = await session.run(
-    "MATCH (h:History) WHERE ID(h) = $history DETACH DELETE h",
+   "MATCH (h:History WHERE ID(h) = $history)-[:HAS_CONVERSATION]->(c:Conversation) detach delete h, c",
     { history: Number(historyID) }
   );
   closeConnection(driver, session);
@@ -221,7 +222,7 @@ const getHistoryByUser = async (userID: Number) => {
     { userIDDB: Number(userID) }
   );
   closeConnection(driver, session);
-  
+
   if (records.length <= 0) {
     return [];
   }
