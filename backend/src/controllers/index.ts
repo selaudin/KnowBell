@@ -1,7 +1,12 @@
 import express, { Express, Request, Response, Application } from "express";
 import dotenv from "dotenv";
 import neo4j, { Driver, Session } from "neo4j-driver";
-import { conversationResponse, conversation } from "../types/conversation";
+import {
+  conversationResponse,
+  conversation,
+  createdResponse,
+  docs,
+} from "../types/conversation";
 
 dotenv.config();
 
@@ -62,10 +67,8 @@ app.delete("/history", async (req: Request, res: Response) => {
   const driver = await createDriver();
 
   const session = driver.session();
-  //"MATCH (h:History WHERE ID(h) = $history)-[:HAS_CONVERSATION]->(c:Conversation)-[r]->(relatedNode) DETACH DELETE h, relatedNode",
-  
   const result = await session.run(
-   "MATCH (h:History WHERE ID(h) = $history)-[:HAS_CONVERSATION]->(c:Conversation) detach delete h, c",
+    "MATCH (h:History WHERE ID(h) = $history)-[:HAS_CONVERSATION]->(c:Conversation) detach delete h, c",
     { history: Number(historyID) }
   );
   closeConnection(driver, session);
@@ -84,13 +87,14 @@ app.post("/history", async (req: Request, res: Response) => {
       "MATCH (u:User where ID(u) = $userID) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
       { history: data, userID: Number(userID) }
     );
-    closeConnection(driver, session);
-    return res.status(200).json({
+
+    res.status(200).json({
       response: "Inserted into history",
     });
   } catch (error) {
+    res.status(500).json({ response: "Failed to insert into history!" });
+  } finally {
     closeConnection(driver, session);
-    return res.status(500).json({ response: "Failed to insert into history!" });
   }
 });
 
@@ -174,26 +178,25 @@ app.get("/conversation", async (req: Request, res: Response) => {
 
 app.post("/conversation", async (req: Request, res: Response) => {
   const { historyID } = req.query;
+  //Search search from frontend
   const convo = req.body;
+  const prompt = "Prompt from MML";
+  const results: docs[] = [];
 
-  const driver = await createDriver();
-  const session = driver.session();
+  const convoObj: conversation = {
+    prompt: prompt,
+    request: req.body,
+    docs: results,
+  };
 
-  try {
-    const createdConvo = await session.run(
-      "MATCH (h:History where ID(h) = $historyID) CREATE (c:Conversation {createdAt: localdatetime()}) SET c += $convo CREATE (h)-[:HAS_CONVERSATION]->(c)",
-      { historyID: Number(historyID), convo: convo }
-    );
-  } catch (error) {
-    closeConnection(driver, session);
-    return res.status(500).json({
-      response: "Failed to create a new conversation",
-    });
-  }
-  closeConnection(driver, session);
-  return res.status(200).json({
-    response: "Successfully created conversation",
-  });
+  const addConvoResponse: createdResponse = await addConversation(
+    convo,
+    Number(historyID)
+  );
+
+  return res
+    .status(addConvoResponse.statusCode)
+    .json(addConvoResponse.response);
 });
 
 const getLLMData = async (request: string) => {
@@ -211,6 +214,37 @@ const getLLMData = async (request: string) => {
   }
 
   return await response.json();
+};
+
+const addConversation = async (
+  conversationData: conversation,
+  historyID: number
+) => {
+  const driver = await createDriver();
+  const session = driver.session();
+  try {
+    const createdConvo = await session.run(
+      "MATCH (h:History where ID(h) = $historyID) CREATE (c:Conversation {createdAt: localdatetime()}) SET c += $convo CREATE (h)-[:HAS_CONVERSATION]->(c)",
+      { historyID: Number(historyID), convo: conversationData }
+    );
+    closeConnection(driver, session);
+    const response: createdResponse = {
+      statusCode: 500,
+      response: {
+        response: "Successfully created conversation",
+      },
+    };
+    return response;
+  } catch (error) {
+    closeConnection(driver, session);
+    const response: createdResponse = {
+      statusCode: 500,
+      response: {
+        response: "Failed to create conversation!",
+      },
+    };
+    return response;
+  }
 };
 
 const getHistoryByUser = async (userID: Number) => {
