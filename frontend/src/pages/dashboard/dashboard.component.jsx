@@ -113,7 +113,8 @@ export function Dashboard() {
                     <div className={'docs-container'}
                          style={{marginTop: '10px', padding: '20px 10%', height: '100vh', overflowY: 'auto'}}>
                         <div className="doc">
-                            <WriteLikeChatGPT text={`Q: ${request}`} style={{marginBottom: '20px'}}/>
+                            {/*<WriteLikeChatGPT text={`Q: ${request}`} style={{marginBottom: '20px'}}/>*/}
+                            <div style={{fontWeight: 'bold'}}>Q: {request}</div>
                             <WriteLikeChatGPT text={`A: ${prompt}`}/>
                         </div>
                         <div>
