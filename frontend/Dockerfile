@@ -11,7 +11,7 @@ COPY package*.json ./
 
 RUN npm install
 
-ENV REACT_APP_BACKEND_URL='testurl'
+ENV REACT_APP_BACKEND_URL='0.0.0.0:8000'
 ENV REACT_APP_EMAIL='knowbell@mail.com'
 ENV REACT_APP_PASS='password'
 

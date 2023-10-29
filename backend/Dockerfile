@@ -1,16 +1,28 @@
-FROM node:alpine
+# Use an official Node.js runtime as a parent image
+FROM node:latest
 
-# Create work directory
-WORKDIR /usr/src/app
+# Set the working directory in the container
+WORKDIR /app
 
-# Install runtime dependencies
-RUN npm install yarn -g
+# Copy package.json and package-lock.json to the working directory
+COPY package*.json ./
 
-# Copy app source to work directory
-COPY . /usr/src/app
+# Install npm dependencies
+RUN npm install
 
-# Install app dependencies
-RUN yarn install
+# Copy all source files to the working directory
+COPY . .
 
-# Build and run the app
-CMD npm start serve
+#ENV NEO4J_URI=neo4j+s://1face838.databases.neo4j.io
+#ENV NEO4J_USER=neo4j
+#ENV NEO4J_PASSWORD=abIABwzjtj2Nm3P4ytNJV_T1T39BHw7JBao-75VlQH8
+
+# Compile TypeScript code to JavaScript (you might need to adjust the path if your TypeScript source files are in a different location)
+RUN npm run build
+
+# Expose the port your application will run on
+EXPOSE 8000
+
+# Command to run your application using node
+CMD ["node", "dist/controllers/index.js"]
+
