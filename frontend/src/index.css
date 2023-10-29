@@ -1,13 +1,235 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+* {
+    box-sizing: border-box;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+html,
+body,
+#root,
+#defaultLayout,
+#guestLayout {
+    min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+    margin: 0;
+}
+
+body {
+    font-family: "Open Sans", sans-serif;
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    color: #212121;
+    background-color: #f6f6f6;
+}
+
+input {
+    outline: 0;
+    background: #ffffff;
+    width: 100%;
+    border: 2px solid #e6e6e6;
+    margin: 0 0 15px;
+    padding: 15px;
+    box-sizing: border-box;
+    font-size: 14px;
+    transition: all 0.3s;
+    border-radius: 10px;
+}
+
+#search-bar{
+    width:82.5%;
+}
+
+.btn {
+    font-family: "Roboto", sans-serif;
+    outline: 0;
+    background: #212121;
+    border: 0;
+    text-decoration: none;
+    padding: 15px;
+    color: #ffffff;
+    font-size: 16px;
+    -webkit-transition: all 0.3 ease;
+    transition: all 0.3 ease;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.btn-block {
+    width: 100%;
+}
+
+
+.btn-logout {
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    color: #212121;
+    transition: all 0.3s;
+    border-radius: 6px;
+}
+
+.btn-logout:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+    background: #fff;
+    color: #000;
+    border: 1px solid black;
+}
+
+.text-center {
+    text-align: center;
+}
+
+table {
+    width: 100%;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+table > thead > tr > th {
+    text-align: left;
+    padding: 0.5rem 0.5rem;
+    background-color: #efefef;
+}
+
+table > tbody > tr > td {
+    padding: 0.5rem 0.5rem;
+    border-bottom: 1px solid #efefef;
+    white-space: nowrap;
+}
+
+.login-form {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-form .form {
+    width: 450px;
+    position: relative;
+    z-index: 1;
+    background: #ffffff;
+    max-width: 450px;
+    padding: 50px;
+    box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.login-form .title {
+    font-size: 20px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.login-form .form .message {
+    margin: 15px 0 0;
+    color: #b3b3b3;
+    font-size: 16px;
+    text-align: center;
+}
+
+.login-form .form .message a {
+    color: #5b08a7;
+    text-decoration: none;
+}
+
+#defaultLayout {
+    display: flex;
+}
+
+#defaultLayout aside {
+    width: 250px;
+    background-color: #212121;
+    /*padding: 1rem*/
+}
+
+#defaultLayout aside > a:hover {
+    /*Link*/
+    /*background-color: rgba(0, 0, 0, 0.2);*/
+    background-color: white;
+    color: black;
+}
+
+#defaultLayout .content {
+    flex: 1;
+}
+
+#defaultLayout header {
+    height: 80px;
+    padding: 2rem 3rem;
+    background-color: white;
+    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#defaultLayout main {
+    padding: 2rem;
+}
+
+.animated {
+    -webkit-animation-duration: 0.3s;
+    animation-duration: 0.3s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+.fadeInDown {
+    -webkit-animation-name: fadeInDown;
+    animation-name: fadeInDown;
+}
+
+@keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#greeting {
+    display: flex;
+    align-items: center;
+}
+
+.v-aligned-image {
+    vertical-align: middle;
+    margin-left: 10px; /* Adjust the space between text and image as needed */
+    border-radius: 50%; /* Makes the image round */
+}
+
+#cross-button:hover {
+    cursor: pointer;
+}
+
+
+
+.doc {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    margin-top: 0.5rem;
+    width: 80%;
+    height: fit-content;
+}
+
+.docs-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
