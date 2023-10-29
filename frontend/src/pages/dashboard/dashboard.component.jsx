@@ -62,7 +62,7 @@ export function Dashboard() {
             </form>
             {id ? (
                 <div className={'docs-container'}
-                     style={{marginTop: '10px', padding: '20px', height: '100vh', overflowY: 'auto'}}>
+                     style={{marginTop: '10px', padding: '20px 10%', height: '100vh', overflowY: 'auto'}}>
                     {
                     filteredDocs.map((doc, index) => {
                         console.log(doc);
@@ -70,7 +70,7 @@ export function Dashboard() {
                         <div>
                             {doc.conversations.map((conv) => (
                                 <div className="doc" key={index}>
-                                     <div>Q: {conv.request}</div>
+                                     <div style={{marginBottom: '20px'}}>Q: {conv.request}</div>
                                      <div>A: {conv.prompt}</div>
                                      {/* <WriteLikeChatGPT text={`A: ${conv.prompt}`} /> */}
                                    {/* <WriteLikeChatGPT text={` A: ${conv.prompt}`}/> */}
