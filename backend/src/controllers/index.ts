@@ -1,6 +1,6 @@
 import express, { Express, Request, Response, Application } from "express";
 import dotenv from "dotenv";
-import neo4j from "neo4j-driver";
+import neo4j, { Driver, Session } from "neo4j-driver";
 import { conversationResponse, conversation } from "../types/conversation";
 
 dotenv.config();
@@ -29,6 +29,7 @@ app.get("/", async (req: Request, res: Response) => {
   const { records } = await session.run("MATCH (p:User) return p");
 
   const result = records.map((record) => record.get("p"));
+  closeConnection(driver, session);
   res.json(result);
 });
 
@@ -46,9 +47,10 @@ app.get("/login", async (req: Request, res: Response) => {
     res.status(401).json({
       response: "Login Failed!",
     });
+    closeConnection(driver, session);
     return;
   }
-
+  closeConnection(driver, session);
   res.status(200).json({
     response: "Successfully logged in!",
     userID: records[0].get("userId").toInt(),
@@ -65,7 +67,7 @@ app.delete("/history", async (req: Request, res: Response) => {
     "MATCH (h:History) WHERE ID(h) = $history DETACH DELETE h",
     { history: Number(historyID) }
   );
-
+  closeConnection(driver, session);
   res.status(200).json(await getHistoryByUser(Number(userID)));
 });
 
@@ -81,10 +83,12 @@ app.post("/history", async (req: Request, res: Response) => {
       "MATCH (u:User where ID(u) = $userID) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
       { history: data, userID: Number(userID) }
     );
+    closeConnection(driver, session);
     return res.status(200).json({
       response: "Inserted into history",
     });
   } catch (error) {
+    closeConnection(driver, session);
     return res.status(500).json({ response: "Failed to insert into history!" });
   }
 });
@@ -129,7 +133,7 @@ app.get("/conversation", async (req: Request, res: Response) => {
     "MATCH (h:History where ID(h) = $historyID)-[r:HAS_CONVERSATION]->(c:Conversation) return c, h ORDER BY c.createdAt ASC",
     { historyID: Number(historyID) }
   );
-
+  closeConnection(driver, session);
   if (records.length <= 0) {
     return res.status(404).json({
       response: "No Conversation found!",
@@ -180,11 +184,12 @@ app.post("/conversation", async (req: Request, res: Response) => {
       { historyID: Number(historyID), convo: convo }
     );
   } catch (error) {
+    closeConnection(driver, session);
     return res.status(500).json({
       response: "Failed to create a new conversation",
     });
   }
-
+  closeConnection(driver, session);
   return res.status(200).json({
     response: "Successfully created conversation",
   });
@@ -215,7 +220,8 @@ const getHistoryByUser = async (userID: Number) => {
     "MATCH (p:User where ID(p) = $userIDDB)-[r:HAS_HISTORY]->(h:History) return h, ID(h) as historyID",
     { userIDDB: Number(userID) }
   );
-
+  closeConnection(driver, session);
+  
   if (records.length <= 0) {
     return [];
   }
@@ -230,6 +236,11 @@ const getHistoryByUser = async (userID: Number) => {
     };
   });
   return attributes;
+};
+
+const closeConnection = (driver: Driver, session: Session) => {
+  session.close();
+  driver.close();
 };
 
 app.listen(port, () => {
