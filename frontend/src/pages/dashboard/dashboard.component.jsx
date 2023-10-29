@@ -10,40 +10,88 @@ import {useParams} from 'react-router-dom';
 export function Dashboard() {
     const currentUser = useSelector(selectCurrentUser)
     const searchRef = useRef(null)
-    const [blocks, setBlocks] =[]
+    const [blocks, setBlocks] = []
     const [docs, setDocs] = useState(null)
     const [filteredDocs, setFilteredDocs] = useState([]);
     const [inputValue, setInputValue] = useState('');
     const {id} = useParams();
+    const [request, setRequest] = useState('')
+    const [prompt, setPrompt] = useState('')
+    const [loading, setLoading] = useState(true)
 
     console.log("id", id);
     console.log("filteredDocs", filteredDocs);
 
-    useEffect(() => {
-        fetch('/conversations.json')
-            .then((response) => response.json())
-            .then((data) => {
-                setDocs(data);
-
-                if (id) {
-                    const filtered = data.filter((item) => item.historyID === parseInt(id));
-                    console.log('filtered', filtered);
-                    setFilteredDocs(filtered);
-                }
-            })
-            .catch((error) => console.error('Error fetching data:', error));
-    }, [id]);
+    // useEffect(() => {
+    //     console.log(id)
+    //     if (id) {
+    //         fetch(`http://localhost:8000/conversation?historyID=${id}`)
+    //             .then((response) => response.json())
+    //             .then((data) => {
+    //                 setDocs(data);
+    //                 console.log(data)
+    //
+    //                 if (id) {
+    //                     const filtered = data.filter((item) => item.historyID === parseInt(id));
+    //                     console.log('filtered', filtered);
+    //                     setFilteredDocs(filtered);
+    //                 }
+    //
+    //                 setLoading(false)
+    //             })
+    //             .catch((error) => console.error('Error fetching data:', error));
+    //     } else {
+    //         fetch(`http://localhost:8000/conversation`)
+    //             .then((response) => response.json())
+    //             .then((data) => {
+    //                 setDocs(data);
+    //
+    //                 if (id) {
+    //                     const filtered = data.filter((item) => item.historyID === parseInt(id));
+    //                     console.log('filtered', filtered);
+    //                     setFilteredDocs(filtered);
+    //                 }
+    //             })
+    //             .catch((error) => console.error('Error fetching data:', error));
+    //     }
+    //
+    //     setLoading(false)
+    // }, [id]);
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        console.log('Requesting for keyword...', searchRef.current.value)
 
-        // fetch('https://jsonplaceholder.typicode.com/posts/1/comments')
-        // fetch('/conversations.json')
-        //     .then(response => response.json())
-        //     .then(data => setDocs(data))
-        //     .catch(error => console.error('Error fetching data:', error));
+        console.log('requesting...')
 
+        // Data to be sent in the POST request as an object
+        const postData = [{
+            question: searchRef.current.value,
+            // Add more key-value pairs as needed
+        }];
+
+// Make a POST request with JSON data using the Fetch API
+        fetch('http://localhost:8000/search?userID=4', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json' // Set the content type to JSON
+            },
+            body: JSON.stringify(postData) // Convert the object to a JSON string
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log(data); // Handle the data from the server
+                setFilteredDocs(data.docs)
+                setDocs(data.docs)
+                setPrompt(data.prompt)
+                console.log(data.prompt)
+                setRequest(data.request)
+
+                setLoading(false)
+
+            })
+            .catch(error => {
+                console.error('There has been a problem with your fetch operation:', error);
+            });
 
 
         // Clear the input field by resetting its value to an empty string
@@ -59,27 +107,22 @@ export function Dashboard() {
         <div style={{textAlign: 'center', position: 'sticky', top: '0', zIndex: '1'}}>
             <form onSubmit={handleSubmit} style={{position: 'sticky'}}>
                 <input ref={searchRef} placeholder={"Search"} id="search-bar"/>
+                <input type="submit" hidden/>
             </form>
-            {id ? (
+            {!loading ? (
                     <div className={'docs-container'}
                          style={{marginTop: '10px', padding: '20px 10%', height: '100vh', overflowY: 'auto'}}>
-                        {
-                            filteredDocs.map((doc, index) => {
-                                console.log(doc);
-                                return (
-                                    <div>
-                                        {doc.conversations.map((conv, index) => (
-                                            <div className="doc" key={index}>
-                                                <WriteLikeChatGPT style={{marginBottom: '20px'}}
-                                                                  text={`Q: ${conv.request}`}/>
-                                                <WriteLikeChatGPT text={` A: ${conv.prompt}`}/>
-                                            </div>
-                                        ))}
-                                        {/* <WriteLikeChatGPT text={doc.conversations[0].prompt} /> */}
-                                    </div>
-                                );
-                            })
-                        }
+                        <div className="doc">
+                            <WriteLikeChatGPT text={`Q: ${request}`} style={{marginBottom: '20px'}}/>
+                            <WriteLikeChatGPT text={`A: ${prompt}`}/>
+                        </div>
+                        <div>
+                            Links: <br/>
+                            {docs.map(url => (
+                                <a href={`https://bfgtest.service-now.com${url}`}><WriteLikeChatGPT
+                                    text={`${url}`}/></a>
+                            ))}
+                        </div>
                     </div>
                 ) :
                 <>
