@@ -1,4 +1,4 @@
-import express, { Express, Request, Response, Application } from "express";
+import express, { Express, Request, Response, Application, request } from "express";
 import dotenv from "dotenv";
 import neo4j, { Driver, Session } from "neo4j-driver";
 import {
@@ -75,28 +75,72 @@ app.delete("/history", async (req: Request, res: Response) => {
   res.status(200).json(await getHistoryByUser(Number(userID)));
 });
 
-app.post("/history", async (req: Request, res: Response) => {
-  const { userID } = req.query;
+app.post("/query", async (req: Request, res: Response) => {
+  const { userID, historyID } = req.query;
   const data = req.body;
 
   const driver = await createDriver();
 
   const session = driver.session();
-  try {
-    const createdUserHistoryRel = await session.run(
-      "MATCH (u:User where ID(u) = $userID) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
-      { history: data, userID: Number(userID) }
-    );
 
-    res.status(200).json({
-      response: "Inserted into history",
-    });
-  } catch (error) {
-    res.status(500).json({ response: "Failed to insert into history!" });
-  } finally {
-    closeConnection(driver, session);
+  const createdUserHistoryRel = await session.run(
+    "MATCH (u:User where ID(u) = $userID) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
+    { history: data, userID: Number(userID) }
+  );
+
+  if (!historyID) {
+    const returnedVal = createHistory(Number(userID), data)
+
+    const hID = Number((await returnedVal).hID)
+    console.log(hID)
+
+    const createdHistoryConversationRel = await session.run(
+      "MATCH (h:History) WHERE ID(h) = $hID CREATE (c:Conversation {createdAt: localdatetime()}) SET c += $conversation CREATE (h)-[:HAS_CONVERSATION]->(c)",
+      { conversation: data, hID: Number(hID) }
+    );
+    return res.json(createdHistoryConversationRel)
+  } else {
+    const appendHistoryConversationRel = await session.run(
+      "MATCH (h:History) WHERE ID(h) = $history CREATE (c:Conversation {createdAt: localdatetime()}) SET c += $conversation CREATE (h)-[:HAS_CONVERSATION]->(c)",
+      { conversation: data, history: Number(historyID) }
+    );
+    return res.json(appendHistoryConversationRel)
   }
+
 });
+
+async function createHistory(userID: number, retrievedData: string) {
+  const data = retrievedData;
+
+  const driver = await createDriver();
+
+  const session = driver.session();
+
+  const createdUserHistoryRel = await session.run(
+    "MATCH (u:User) WHERE ID(u) = $uID CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h) return ID(h) as nodeId",
+    { history: data, uID: userID }
+  );
+  const historyID: number = createdUserHistoryRel.records[0].get("nodeId");
+
+  const returnData = { "response": createdUserHistoryRel, "hID": historyID }
+  return returnData
+}
+
+// app.post("/history", async (req: Request, res: Response) => {
+//   const { userID } = req.query;
+//   const data = req.body;
+
+//   const driver = await createDriver();
+
+//   const session = driver.session();
+
+//   const createdUserHistoryRel = await session.run(
+//     "MATCH (u:User {surname : 'Doe'}) CREATE (h:History {createdAt: localdatetime()}) SET h += $history CREATE (u)-[:HAS_HISTORY]->(h)",
+//     { history: data }
+//   );
+
+//   return res.json(createdUserHistoryRel)
+// });
 
 app.get("/history", async (req: Request, res: Response) => {
   const { userID } = req.query;
